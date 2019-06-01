@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t neogazebo/react-test -f ./client/Dockerfile.dev ./client
+
+script: 
+  - docker run neogazebo/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t neogazebo/multi-client ./client
+  - docker build -t neogazebo/multi-nginx ./nginx
+  - docker build -t neogazebo/multi-worker ./worker
+  - docker build -t neogazebo/multi-server ./server
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push neogazebo/multi-client
+  - docker push neogazebo/multi-nginx
+  - docker push neogazebo/multi-worker
+  - docker push neogazebo/multi-server
